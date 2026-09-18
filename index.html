@@ -16,7 +16,7 @@ nav{position:sticky;bottom:0;background:#111;padding:8px;display:flex;gap:5px}na
 <main>
 <section id="auth" class="screen active"><h1>Welcome to HELPER</h1><p>Book help by the hour or request a ride.</p>
 <div class="card"><input id="name" placeholder="Full name"><input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password (6+ characters)">
-<div id="authMsg" class="msg" style="display:none"></div><button onclick="signup()">Create account</button><button onclick="signin()">Sign in</button></div></section>
+<div id="authMsg" class="msg" style="display:none"></div><button onclick="signup()">Create account</button><button onclick="signin()">Sign in</button><button class="light" onclick="resetPassword()">Forgot password / Reset password</button></div></section>
 <section id="home" class="screen"><h1>Hello, <span id="hello">there</span> 👋</h1><div class="grid">
 <button onclick="show('person')">👤 Book a Person</button><button onclick="show('ride')">🏍️ Ride</button><button onclick="show('bookings')">📋 My Bookings</button><button onclick="show('helper')">🧰 Helper</button></div></section>
 <section id="person" class="screen"><h2>Book a Person</h2><div id="services" class="grid"></div>
@@ -32,6 +32,7 @@ let user,profile,services=[],selected,vehicle;let helperClient=null;function get
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='bookings')loadBookings();if(id==='person')loadServices();if(id==='helper')loadJobs()}
 function notice(t){let e=document.getElementById('authMsg');e.textContent=t;e.style.display='block'}
 async function signup(){try{let n=document.getElementById('name').value.trim(),e=document.getElementById('email').value.trim(),p=document.getElementById('password').value;if(!e)return notice('Please enter your email.');if(p.length<6)return notice('Password must be at least 6 characters.');let r=await getDB().auth.signUp({email:e,password:p,options:{data:{full_name:n}}});if(r.error)return notice(r.error.message);notice(r.data.session?'Account created. Signing you in...':'Account created. Check your email, then sign in.')}catch(x){notice('Error: '+x.message)}}
+async function resetPassword(){try{let e=document.getElementById('email').value.trim();if(!e)return notice('Enter your email first.');let r=await getDB().auth.resetPasswordForEmail(e,{redirectTo:window.location.origin+window.location.pathname});if(r.error)return notice(r.error.message);notice('Password reset email sent. Check your inbox.')}catch(x){notice('Error: '+x.message)}}
 async function signin(){try{let e=document.getElementById('email').value.trim(),p=document.getElementById('password').value;if(!e||!p)return notice('Please enter your email and password.');let r=await getDB().auth.signInWithPassword({email:e,password:p});if(r.error)return notice(r.error.message);await boot()}catch(x){notice('Error: '+x.message)}}
 let realtimeChannel=null;
 function startRealtime(){
