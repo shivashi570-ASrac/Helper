@@ -32,8 +32,8 @@ const URL='https://dfwamdeqrfubofraybsu.supabase.co',KEY='sb_publishable_KEgdWV-
 const db=supabase.createClient(URL,KEY);let user,profile,services=[],selected,vehicle;
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='bookings')loadBookings();if(id==='person')loadServices();if(id==='helper')loadJobs()}
 function notice(t){let e=document.getElementById('authMsg');e.textContent=t;e.style.display='block'}
-async function signup(){let n=name.value.trim(),e=email.value.trim(),p=password.value;if(p.length<6)return notice('Password must be at least 6 characters.');let r=await db.auth.signUp({email:e,password:p,options:{data:{full_name:n}}});if(r.error)return notice(r.error.message);notice('Account created. Check your email, then sign in.')}
-async function signin(){let r=await db.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(r.error)return notice(r.error.message);await boot()}
+async function signup(){try{let n=document.getElementById('name').value.trim(),e=document.getElementById('email').value.trim(),p=document.getElementById('password').value;if(!e)return notice('Please enter your email.');if(p.length<6)return notice('Password must be at least 6 characters.');let r=await db.auth.signUp({email:e,password:p,options:{data:{full_name:n}}});if(r.error)return notice(r.error.message);notice(r.data.session?'Account created. Signing you in...':'Account created. Check your email, then sign in.')}catch(x){notice('Error: '+x.message)}}
+async function signin(){try{let e=document.getElementById('email').value.trim(),p=document.getElementById('password').value;if(!e||!p)return notice('Please enter your email and password.');let r=await db.auth.signInWithPassword({email:e,password:p});if(r.error)return notice(r.error.message);await boot()}catch(x){notice('Error: '+x.message)}}
 let realtimeChannel=null;
 function startRealtime(){
  if(realtimeChannel) db.removeChannel(realtimeChannel);
@@ -43,7 +43,7 @@ function startRealtime(){
    if(user && user.role==='customer') loadBookings();
   }).subscribe();
 }
-async function boot(){let r=await db.auth.getUser();user=r.data.user;if(!user)return;let p=await db.from('profiles').select('*').eq('id',user.id).single();if(p.error)return notice(p.error.message);profile=p.data;hello.textContent=profile.full_name||'there';badge.textContent=profile.role.toUpperCase();nav.style.display='flex';startRealtime();show('home')}
+async function boot(){try{let r=await db.auth.getUser();user=r.data.user;if(!user)return;let p=await db.from('profiles').select('*').eq('id',user.id).single();if(p.error)return notice(p.error.message);profile=p.data;document.getElementById('hello').textContent=profile.full_name||'there';document.getElementById('badge').textContent=profile.role.toUpperCase();document.getElementById('nav').style.display='flex';startRealtime();show('home')}catch(x){notice('Error: '+x.message)}}
 async function loadServices(){let r=await db.from('services').select('*').eq('active',true).order('name');services=r.data||[];servicesEl=document.getElementById('services');servicesEl.innerHTML=services.map(s=>`<button class="light" onclick="choose('${s.id}')">${s.name}<br>₹${s.rate_per_hour}/hour</button>`).join('')}
 function choose(id){selected=services.find(s=>s.id===id);serviceName.textContent=selected.name;personForm.style.display='block';price()}
 function price(){if(selected)personPrice.textContent='₹'+(Number(selected.rate_per_hour)*(Number(hours.value)||1))}
