@@ -29,7 +29,7 @@ nav{position:sticky;bottom:0;background:#111;padding:8px;display:flex;gap:5px}na
 </div>
 <script>
 const URL='https://dfwamdeqrfubofraybsu.supabase.co',KEY='sb_publishable_KEgdWV-HYq8jGbXZ6rX3sw__e7AXz2H';
-let user,profile,services=[],selected,vehicle;function getDB(){if(!getDB()){if(!window.supabase||!window.supabase.createClient)throw new Error('Supabase library did not load. Please refresh the page.');getDB()=window.supabase.createClient(URL,KEY)}return getDB()}
+let user,profile,services=[],selected,vehicle;let helperClient=null;function getDB(){if(!helperClient){if(!window.supabase||!window.supabase.createClient)throw new Error('Supabase library did not load. Please refresh the page.');helperClient=window.supabase.createClient(URL,KEY)}return helperClient}
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');if(id==='bookings')loadBookings();if(id==='person')loadServices();if(id==='helper')loadJobs()}
 function notice(t){let e=document.getElementById('authMsg');e.textContent=t;e.style.display='block'}
 async function signup(){try{let n=document.getElementById('name').value.trim(),e=document.getElementById('email').value.trim(),p=document.getElementById('password').value;if(!e)return notice('Please enter your email.');if(p.length<6)return notice('Password must be at least 6 characters.');let r=await getDB().auth.signUp({email:e,password:p,options:{data:{full_name:n}}});if(r.error)return notice(r.error.message);notice(r.data.session?'Account created. Signing you in...':'Account created. Check your email, then sign in.')}catch(x){notice('Error: '+x.message)}}
